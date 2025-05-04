@@ -1,1 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>DEVCOIN Dashboard</title>
+  <style>
+    body {
+      background-color: #0e0e0e;
+      color: #00ffcc;
+      font-family: 'Courier New', Courier, monospace;
+      padding: 20px;
+    }
+    input, button {
+      padding: 5px;
+      margin: 5px;
+      font-size: 16px;
+      background: #222;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+    }
+    .section {
+      margin-top: 30px;
+    }
+    pre {
+      background: #111;
+      padding: 10px;
+      border: 1px solid #00ffcc;
+    }
+  </style>
+</head>
+<body>
+  <h1>DEVCOIN Dashboard</h1>
+
+  <div class="section">
+    <h3>Mint Token</h3>
+    <input type="text" id="mintTo" placeholder="Alamat penerima">
+    <input type="number" id="mintAmount" placeholder="Jumlah">
+    <button onclick="sendTx('mint')">Mint</button>
+  </div>
+
+  <div class="section">
+    <h3>Burn Token</h3>
+    <input type="text" id="burnFrom" placeholder="Alamat pembakar">
+    <input type="number" id="burnAmount" placeholder="Jumlah">
+    <button onclick="sendTx('burn')">Burn</button>
+  </div>
+
+  <div class="section">
+    <h3>Transfer Token</h3>
+    <input type="text" id="from" placeholder="Dari">
+    <input type="text" id="to" placeholder="Kepada">
+    <input type="number" id="amount" placeholder="Jumlah">
+    <button onclick="sendTx('transfer')">Transfer</button>
+  </div>
+
+  <div class="section">
+    <h3>Status Wallet (Live)</h3>
+    <button onclick="getBalances()">Refresh Balances</button>
+    <pre id="balanceDisplay">Loading...</pre>
+  </div>
+
+  <script>
+    const apiURL = 'http://localhost:8080';
+
+    function sendTx(type) {
+      let data = { type };
+
+      if (type === 'mint') {
+        data.to = document.getElementById('mintTo').value;
+        data.amount = parseInt(document.getElementById('mintAmount').value);
+      } else if (type === 'burn') {
+        data.from = document.getElementById('burnFrom').value;
+        data.amount = parseInt(document.getElementById('burnAmount').value);
+      } else if (type === 'transfer') {
+        data.from = document.getElementById('from').value;
+        data.to = document.getElementById('to').value;
+        data.amount = parseInt(document.getElementById('amount').value);
+      }
+
+      fetch(`${apiURL}/tx`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data)
+      })
+      .then(res => res.json())
+      .then(res => {
+        alert(res.log);
+        getBalances();
+      })
+      .catch(err => alert("Gagal hantar transaksi: " + err));
+    }
+
+    function getBalances() {
+      fetch(`${apiURL}/balances`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('balanceDisplay').textContent = JSON.stringify(data, null, 2);
+        })
+        .catch(() => {
+          document.getElementById('balanceDisplay').textContent = "Tidak dapat hubung server.";
+        });
+    }
+
+    getBalances();
+  </script>
+</body>
+</html>
 
